@@ -11,17 +11,29 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
   final ChatRepository repo;
   final SocketManager socketManager;
 
-  ChatMessagesBloc({required this.repo, required this.socketManager}) : super(ChatMessagesInitial()) {
+  ChatMessagesBloc({required this.repo, required this.socketManager})
+      : super(ChatMessagesInitial()) {
     on<LoadMessages>(_onLoad);
     on<SendMessageEvent>(_onSend);
-    // subscribe to socket messages (append) if desired
+    on<NewIncomingMessageEvent>(_onNewIncoming);
+
+    socketManager.onMessage((data) {
+      print('Received socket message: $data');
+      try {
+        final msg = MessageModel.fromJson(data);
+        add(NewIncomingMessageEvent(msg));
+      } catch (e) {
+        print('Error parsing incoming message: $e');
+      }
+    });
   }
 
   Future<void> _onLoad(LoadMessages e, Emitter<ChatMessagesState> emit) async {
     emit(MessagesLoading());
     try {
       final list = await repo.getMessages(e.chatId);
-      final messages = list.map((m) => MessageModel.fromJson(m as Map<String, dynamic>)).toList();
+      final messages =
+      list.map((m) => MessageModel.fromJson(m as Map<String, dynamic>)).toList();
       emit(MessagesLoaded(messages));
     } catch (ex) {
       emit(MessagesError(ex.toString()));
@@ -49,7 +61,6 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
     try {
       if (socketManager.isConnected) {
         socketManager.sendMessage(e.payload);
-        // server should broadcast back; you can add a socket listener to append server messages
       } else {
         await repo.sendMessageRest(e.payload);
       }
@@ -59,6 +70,15 @@ class ChatMessagesBloc extends Bloc<ChatMessagesEvent, ChatMessagesState> {
       } catch (ex2) {
         emit(MessagesError('Failed to send: ${ex2.toString()}'));
       }
+    }
+  }
+
+  Future<void> _onNewIncoming(
+      NewIncomingMessageEvent e, Emitter<ChatMessagesState> emit) async {
+    final current = state;
+    if (current is MessagesLoaded) {
+      final updated = List<MessageModel>.from(current.messages)..add(e.message);
+      emit(MessagesLoaded(updated));
     }
   }
 }

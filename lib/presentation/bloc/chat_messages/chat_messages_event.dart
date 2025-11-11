@@ -19,3 +19,11 @@ class SendMessageEvent extends ChatMessagesEvent {
   @override
   List<Object?> get props => [payload];
 }
+
+class NewIncomingMessageEvent extends ChatMessagesEvent {
+  final MessageModel message;
+  const NewIncomingMessageEvent(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+

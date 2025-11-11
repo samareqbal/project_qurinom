@@ -46,6 +46,8 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Chat Interview App',
           theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: ThemeMode.system,
           debugShowCheckedModeBanner: false,
           initialRoute: '/',
           routes: {

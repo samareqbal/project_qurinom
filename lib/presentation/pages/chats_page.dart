@@ -31,7 +31,6 @@ class _ChatsPageState extends State<ChatsPage> {
     if (userId.isEmpty) {
       // try to fetch from sample or alert
     } else {
-      print('📩 Loading chats for userId: $userId');
       bloc.add(LoadChats(userId));
     }
     setState(() => loading = false);
@@ -39,8 +38,9 @@ class _ChatsPageState extends State<ChatsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Chats')),
+      appBar: AppBar(title: const Text('Chats', style: TextStyle(fontSize: 20),)),
       body: RefreshIndicator(
         onRefresh: _loadChats,
         child: BlocBuilder<ChatsBloc, ChatsState>(
@@ -54,16 +54,42 @@ class _ChatsPageState extends State<ChatsPage> {
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, i) {
+
                   final c = items[i];
-                  return ListTile(
-                    tileColor: Theme.of(context).colorScheme.surfaceVariant,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    title: Text(c.title),
-                    subtitle: Text('Participants: ${c.participants.length}'),
-                    onTap: () {
-                      Navigator.pushNamed(context, '/chat', arguments: {'chatId': c.id, 'otherName': c.title});
-                    },
+
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: color.primaryContainer,
+                        child: Text(
+                          c.title.isNotEmpty ? c.title[0].toUpperCase() : '?',
+                          style: TextStyle(color: color.onPrimaryContainer),
+                        ),
+                      ),
+                      title: Text(c.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      subtitle: Text(
+                        'Participants: ${c.participants.length}',
+                        style: TextStyle(color: color.onSurfaceVariant),
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/chat',
+                            arguments: {'chatId': c.id, 'otherName': c.title});
+                      },
+                    ),
                   );
+
+
+                  // return ListTile(
+                  //   tileColor: Theme.of(context).colorScheme.surfaceVariant,
+                  //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  //   title: Text(c.title),
+                  //   subtitle: Text('Participants: ${c.participants.length}'),
+                  //   onTap: () {
+                  //     Navigator.pushNamed(context, '/chat', arguments: {'chatId': c.id, 'otherName': c.title});
+                  //   },
+                  // );
                 },
               );
             }

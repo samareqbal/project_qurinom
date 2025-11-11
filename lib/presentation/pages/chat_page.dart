@@ -60,17 +60,14 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Widget _buildBubble(MessageModel m, bool isMine) {
-    final bg = isMine
-        ? Theme.of(context).colorScheme.primary
-        : Theme.of(context).colorScheme.surfaceVariant;
-    final textColor = isMine
-        ? Theme.of(context).colorScheme.onPrimary
-        : Theme.of(context).colorScheme.onSurfaceVariant;
+    final color = Theme.of(context).colorScheme;
+    final bg = isMine ? color.primary : color.surfaceVariant;
+    final textColor = isMine ? color.onPrimary : color.onSurface;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
         decoration: BoxDecoration(
           color: bg,
@@ -80,11 +77,30 @@ class _ChatPageState extends State<ChatPage> {
             bottomLeft: Radius.circular(isMine ? 16 : 4),
             bottomRight: Radius.circular(isMine ? 4 : 16),
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(1, 2),
+            ),
+          ],
         ),
-        child: Text(m.content, style: TextStyle(color: textColor, fontSize: 15)),
+        child: Column(
+          crossAxisAlignment:
+          isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            Text(m.content, style: TextStyle(color: textColor, fontSize: 15)),
+            const SizedBox(height: 4),
+            Text(
+              '${m.createdAt.hour.toString().padLeft(2, '0')}:${m.createdAt.minute.toString().padLeft(2, '0')}',
+              style: TextStyle(fontSize: 11, color: textColor.withOpacity(0.7)),
+            ),
+          ],
+        ),
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -151,10 +167,15 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  IconButton(
+                  IconButton.filled(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStatePropertyAll(
+                        Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
                     onPressed: _send,
-                    icon: const Icon(Icons.send_rounded),
-                  ),
+                    icon: const Icon(Icons.send_rounded, color: Colors.white),
+                  )
                 ],
               ),
             ),
